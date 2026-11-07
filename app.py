@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Stile CSS per trasformare i pulsanti in card interattive che cambiano colore
+# Stile CSS avanzato per i pulsanti: cambio di sfondo dinamico e box interattivi
 st.markdown("""
     <style>
     /* Sfondo nero assoluto */
@@ -29,25 +29,6 @@ st.markdown("""
         font-size: 1.1rem !important;
     }
 
-    /* Stile personalizzato per i pulsanti-card della checklist */
-    .stButton button {
-        width: 100%;
-        background-color: #0D1117 !important;
-        color: #E6EDF3 !important;
-        border: 1px solid #30363D !important;
-        border-radius: 12px !important;
-        padding: 20px 15px !important;
-        font-size: 16px !important;
-        font-weight: 600 !important;
-        font-family: 'Courier New', monospace !important;
-        transition: all 0.2s ease !important;
-        text-align: left !important;
-    }
-    .stButton button:hover {
-        border-color: #58A6FF !important;
-        background-color: #11161D !important;
-    }
-
     /* Immagini piantine */
     img {
         border-radius: 10px;
@@ -58,7 +39,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Inizializzazione dello stato della memoria (memorizza i click)
+# Inizializzazione dello stato in memoria
 if 'pt_states' not in st.session_state:
     st.session_state.pt_states = [False, False, False, False, False]
 if 'pp_states' not in st.session_state:
@@ -72,14 +53,14 @@ st.caption("Protocollo di sicurezza e chiusura")
 
 st.markdown("---")
 
-# Selettore piano a pulsanti orizzontali (pulito e immediato)
+# Selettore piano a pulsanti orizzontali
 col_nav1, col_nav2 = st.columns(2)
 with col_nav1:
-    if st.button("📍 Piano Terra", type="secondary" if st.session_state.piano_corrente != "Piano Terra" else "primary"):
+    if st.button("📍 Piano Terra", type="secondary" if st.session_state.piano_corrente != "Piano Terra" else "primary", use_container_width=True):
         st.session_state.piano_corrente = "Piano Terra"
         st.rerun()
 with col_nav2:
-    if st.button("📍 Primo Piano", type="secondary" if st.session_state.piano_corrente != "Primo Piano" else "primary"):
+    if st.button("📍 Primo Piano", type="secondary" if st.session_state.piano_corrente != "Primo Piano" else "primary", use_container_width=True):
         st.session_state.piano_corrente = "Primo Piano"
         st.rerun()
 
@@ -89,14 +70,18 @@ st.markdown("")
 if st.session_state.piano_corrente == "Piano Terra":
     st.subheader("PIANO TERRA")
     
-    # Gestione piantina dinamica
+    # Gestione sicura della piantina (evita qualsiasi crash se manca il file _completo)
+    completati = sum(st.session_state.pt_states)
     try:
-        if all(st.session_state.pt_states):
+        if completati == 5:
             st.image("piano_terra_completo.png", caption="Blueprint - Piano Terra [IN SICUREZZA]", use_container_width=True)
         else:
             st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
     except:
-        st.warning("⚠️ Metti l'immagine 'piano_terra.png' nella cartella del progetto.")
+        try:
+            st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
+        except:
+            st.warning("⚠️ Metti l'immagine 'piano_terra.png' nella cartella del progetto.")
 
     st.markdown("### Verifica Elementi:")
     
@@ -110,19 +95,22 @@ if st.session_state.piano_corrente == "Piano Terra":
 
     col1, col2 = st.columns(2)
     for i, voce in enumerate(voci_pt):
-        # Scegliamo la colonna
         current_col = col1 if i % 2 == 0 else col2
+        is_checked = st.session_state.pt_states[i]
         
-        # Testo e colore dinamico in base allo stato
-        completato = st.session_state.pt_states[i]
-        etichetta = f"✅ {voce} [COMPLETATO]" if completato else f"⬜ {voce}"
+        # Stile dinamico del pulsante: cambia colore di sfondo e icona se spuntato
+        if is_checked:
+            label = f"🟢 {voce} [FATTO]"
+            btn_type = "primary"
+        else:
+            label = f"⚪ {voce}"
+            btn_type = "secondary"
         
         with current_col:
-            if st.button(etichetta, key=f"pt_btn_{i}"):
-                st.session_state.pt_states[i] = not completato
+            if st.button(label, key=f"pt_btn_{i}", type=btn_type, use_container_width=True):
+                st.session_state.pt_states[i] = not is_checked
                 st.rerun()
 
-    completati = sum(st.session_state.pt_states)
     st.progress(completati / 5)
 
     if completati == 5:
@@ -134,13 +122,17 @@ if st.session_state.piano_corrente == "Piano Terra":
 else:
     st.subheader("PRIMO PIANO")
     
+    completati_p1 = sum(st.session_state.pp_states)
     try:
-        if all(st.session_state.pp_states):
+        if completati_p1 == 5:
             st.image("primo_piano_completo.png", caption="Blueprint - Primo Piano [IN SICUREZZA]", use_container_width=True)
         else:
             st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
     except:
-        st.warning("⚠️ Metti l'immagine 'primo_piano.png' nella cartella del progetto.")
+        try:
+            st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
+        except:
+            st.warning("⚠️ Metti l'immagine 'primo_piano.png' nella cartella del progetto.")
 
     st.markdown("### Verifica Elementi:")
     
@@ -155,19 +147,26 @@ else:
     col1, col2 = st.columns(2)
     for i, voce in enumerate(voci_pp):
         current_col = col1 if i % 2 == 0 else col2
+        is_checked = st.session_state.pp_states[i]
         
-        completato = st.session_state.pp_states[i]
-        etichetta = f"✅ {voce} [COMPLETATO]" if completato else f"⬜ {voce}"
+        if is_checked:
+            label = f"🟢 {voce} [FATTO]"
+            btn_type = "primary"
+        else:
+            label = f"⚪ {voce}"
+            btn_type = "secondary"
         
         with current_col:
-            if st.button(etichetta, key=f"pp_btn_{i}"):
-                st.session_state.pp_states[i] = not completato
+            if st.button(label, key=f"pp_btn_{i}", type=btn_type, use_container_width=True):
+                st.session_state.pp_states[i] = not is_checked
                 st.rerun()
 
-    completati_p1 = sum(st.session_state.pp_states)
     st.progress(completati_p1 / 5)
 
     if completati_p1 == 5:
+        st.success("Primo Piano completato e in sicurezza.")
+    else:
+        st.info(f"Stato: {completati_p1}/5 controlli completati")
         st.success("Primo Piano completato e in sicurezza.")
     else:
         st.info(f"Stato: {completati_p1}/5 controlli completati")
