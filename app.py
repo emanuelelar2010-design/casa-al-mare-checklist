@@ -2,19 +2,19 @@ import streamlit as st
 
 # Configurazione pagina
 st.set_page_config(
-    page_title="Checklist Casa al Mare", 
+    page_title="Checklist Ibiza", 
     page_icon="📐", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Stile CSS Minimal & Blueprint con layout a griglia/card
+# Stile CSS Minimal & Blueprint definitivo (Sfondo forzato nero per tutti i dispositivi)
 st.markdown("""
     <style>
-    .main { 
-        background-color: #07090E; 
-        color: #C9D1D9;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Forzatura sfondo nero assoluto su qualsiasi dispositivo/browser */
+    .stApp, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+        background-color: #07090E !important;
+        color: #C9D1D9 !important;
     }
     
     h1 { 
@@ -29,6 +29,7 @@ st.markdown("""
         font-size: 1.1rem !important;
     }
 
+    /* Menù a tendina elegante */
     .stSelectbox div[data-baseweb="select"] {
         background-color: #0D1117;
         border-radius: 8px;
@@ -36,13 +37,13 @@ st.markdown("""
         color: #E6EDF3;
     }
 
-    /* Stile card interattive ordinate */
+    /* Checkbox rese molto più grandi, spaziose e facili da cliccare da mobile */
     .stCheckbox {
         background-color: #0D1117;
-        padding: 10px 14px;
-        border-radius: 8px;
+        padding: 16px 18px;
+        border-radius: 10px;
         border: 1px solid #21262D;
-        margin-bottom: 6px;
+        margin-bottom: 10px;
         transition: all 0.2s ease;
     }
     .stCheckbox:hover {
@@ -50,26 +51,29 @@ st.markdown("""
         background-color: #11161D;
     }
     .stCheckbox label {
-        font-size: 14px !important;
+        font-size: 16px !important;
         color: #E6EDF3 !important;
-        font-weight: 400;
+        font-weight: 500;
         font-family: 'Courier New', monospace;
     }
 
+    /* Immagini piantine posizionate in alto con stile pulito */
     img {
         border-radius: 8px;
         border: 1px solid #30363D;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        margin-bottom: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        margin-bottom: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("CHECKLIST // CASA AL MARE")
+# Intestazione aggiornata
+st.title("CHECKLIST // IBIZA")
 st.caption("Protocollo di sicurezza e chiusura")
 
 st.markdown("---")
 
+# Menù a tendina posizionato in alto a sinistra/principale
 piano = st.selectbox(
     "Seleziona il livello:", 
     ["Piano Terra", "Primo Piano"]
@@ -80,7 +84,21 @@ st.markdown("")
 if piano == "Piano Terra":
     st.subheader("PIANO TERRA")
     
-    # Sezione Controlli in griglia a 2 colonne
+    # 1. PIANTINA SUBITO IN ALTO
+    try:
+        if 'c1' in locals() and c1 and 'c2' in locals() and c2 and 'c3' in locals() and c3 and 'c4' in locals() and c4 and 'c5' in locals() and c5:
+            st.image("piano_terra_completo.png", caption="Blueprint - Piano Terra [IN SICUREZZA]", use_container_width=True)
+        else:
+            st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
+    except:
+        try:
+            st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
+        except:
+            st.warning("⚠️ Metti l'immagine 'piano_terra.png' nella cartella del progetto.")
+
+    st.markdown("### Verifica Elementi:")
+    
+    # Checkbox grandi e spaziose disposte su due colonne
     col1, col2 = st.columns(2)
     with col1:
         c1 = st.checkbox("🚰 Contatore Acqua")
@@ -91,20 +109,6 @@ if piano == "Piano Terra":
         c5 = st.checkbox("🪜 Vano Scale")
 
     completati = sum([c1, c2, c3, c4, c5])
-    
-    # DINAMICA PIANTINA: Se completato al 100%, mostra la versione evidenziata/colorata
-    try:
-        if completati == 5:
-            st.image("piano_terra_completo.png", caption="Blueprint - Piano Terra [IN SICUREZZA]", use_container_width=True)
-        else:
-            st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
-    except:
-        # Fallback se non carichi la versione _completo.png
-        try:
-            st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
-        except:
-            st.warning("⚠️ Metti l'immagine 'piano_terra.png' nella cartella del progetto.")
-
     st.progress(completati / 5)
 
     if completati == 5:
@@ -114,6 +118,21 @@ if piano == "Piano Terra":
 
 else:
     st.subheader("PRIMO PIANO")
+    
+    # 1. PIANTINA SUBITO IN ALTO ANCHE QUI
+    try:
+        # Controllo dinamico dello stato completato
+        if 'p1' in locals() and p1 and 'p2' in locals() and p2 and 'p3' in locals() and p3 and 'p4' in locals() and p4 and 'p5' in locals() and p5:
+            st.image("primo_piano_completo.png", caption="Blueprint - Primo Piano [IN SICUREZZA]", use_container_width=True)
+        else:
+            st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
+    except:
+        try:
+            st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
+        except:
+            st.warning("⚠️ Metti l'immagine 'primo_piano.png' nella cartella del progetto.")
+
+    st.markdown("### Verifica Elementi:")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -126,22 +145,10 @@ else:
 
     completati_p1 = sum([p1, p2, p3, p4, p5])
     
-    # DINAMICA PIANTINA PRIMO PIANO
-    try:
-        if completati_p1 == 5:
-            st.image("primo_piano_completo.png", caption="Blueprint - Primo Piano [IN SICUREZZA]", use_container_width=True)
-        else:
-            st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
-    except:
-        try:
-            st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
-        except:
-            st.warning("⚠️ Metti l'immagine 'primo_piano.png' nella cartella del progetto.")
-
+    # (Rimossa la seconda barra doppia: ora c'è un'unica barra di progresso pulita)
     st.progress(completati_p1 / 5)
 
     if completati_p1 == 5:
         st.success("Primo Piano completato e in sicurezza.")
     else:
-        st.info(f"Stato: {completati_p1}/5 controlli completati")
         st.info(f"Stato: {completati_p1}/5 controlli completati")
