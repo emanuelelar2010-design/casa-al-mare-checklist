@@ -8,10 +8,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Stile CSS avanzato per i pulsanti: cambio di sfondo dinamico e box interattivi
+# Stile CSS per i pulsanti e lo sfondo nero assoluto
 st.markdown("""
     <style>
-    /* Sfondo nero assoluto */
     .stApp, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #07090E !important;
         color: #C9D1D9 !important;
@@ -29,7 +28,6 @@ st.markdown("""
         font-size: 1.1rem !important;
     }
 
-    /* Immagini piantine */
     img {
         border-radius: 10px;
         border: 1px solid #30363D;
@@ -72,13 +70,10 @@ if st.session_state.piano_corrente == "Piano Terra":
     
     completati = sum(st.session_state.pt_states)
     
-    # Gestione sicura della piantina
-    try:
-        if completati == 5:
-            st.image("piano_terra_completo.png", caption="Blueprint - Piano Terra [IN SICUREZZA]", use_container_width=True)
-        else:
-            st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
-    except Exception:
+    # Mostra la piantina in base allo stato
+    if completati == 5:
+        st.image("piano_terra.png", caption="Blueprint - Piano Terra [IN SICUREZZA]", use_container_width=True)
+    else:
         st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
 
     st.markdown("### Verifica Elementi:")
@@ -121,12 +116,9 @@ else:
     
     completati_p1 = sum(st.session_state.pp_states)
     
-    try:
-        if completati_p1 == 5:
-            st.image("primo_piano_completo.png", caption="Blueprint - Primo Piano [IN SICUREZZA]", use_container_width=True)
-        else:
-            st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
-    except Exception:
+    if completati_p1 == 5:
+        st.image("primo_piano.png", caption="Blueprint - Primo Piano [IN SICUREZZA]", use_container_width=True)
+    else:
         st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
 
     st.markdown("### Verifica Elementi:")
@@ -159,9 +151,6 @@ else:
     st.progress(completati_p1 / 5)
 
     if completati_p1 == 5:
-        st.success("Primo Piano completato e in sicurezza.")
-    else:
-        st.info(f"Stato: {completati_p1}/5 controlli completati")
         st.success("Primo Piano completato e in sicurezza.")
     else:
         st.info(f"Stato: {completati_p1}/5 controlli completati")
