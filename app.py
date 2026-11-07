@@ -70,18 +70,16 @@ st.markdown("")
 if st.session_state.piano_corrente == "Piano Terra":
     st.subheader("PIANO TERRA")
     
-    # Gestione sicura della piantina (evita qualsiasi crash se manca il file _completo)
     completati = sum(st.session_state.pt_states)
+    
+    # Gestione sicura della piantina
     try:
         if completati == 5:
             st.image("piano_terra_completo.png", caption="Blueprint - Piano Terra [IN SICUREZZA]", use_container_width=True)
         else:
             st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
-    except:
-        try:
-            st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
-        except:
-            st.warning("⚠️ Metti l'immagine 'piano_terra.png' nella cartella del progetto.")
+    except Exception:
+        st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
 
     st.markdown("### Verifica Elementi:")
     
@@ -98,7 +96,6 @@ if st.session_state.piano_corrente == "Piano Terra":
         current_col = col1 if i % 2 == 0 else col2
         is_checked = st.session_state.pt_states[i]
         
-        # Stile dinamico del pulsante: cambia colore di sfondo e icona se spuntato
         if is_checked:
             label = f"🟢 {voce} [FATTO]"
             btn_type = "primary"
@@ -123,16 +120,14 @@ else:
     st.subheader("PRIMO PIANO")
     
     completati_p1 = sum(st.session_state.pp_states)
+    
     try:
         if completati_p1 == 5:
             st.image("primo_piano_completo.png", caption="Blueprint - Primo Piano [IN SICUREZZA]", use_container_width=True)
         else:
             st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
-    except:
-        try:
-            st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
-        except:
-            st.warning("⚠️ Metti l'immagine 'primo_piano.png' nella cartella del progetto.")
+    except Exception:
+        st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
 
     st.markdown("### Verifica Elementi:")
     
