@@ -1,14 +1,14 @@
 import streamlit as st
 
-# Configurazione pagina
+# Configurazione pagina con l'icona personalizzata
 st.set_page_config(
     page_title="Checklist Ibiza", 
-    page_icon="📐", 
+    page_icon="icona.png", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Stile CSS: Sfondo nero assoluto, rimozione striscia bianca e pulsanti cambio piano grandi
+# Stile CSS: Sfondo nero assoluto, rimozione striscia bianca e pulsanti puliti
 st.markdown("""
     <style>
     /* Rimozione completa di ogni margine e striscia bianca in alto */
@@ -17,7 +17,7 @@ st.markdown("""
         color: #C9D1D9 !important;
     }
     
-    /* Nasconde l'header trasparente di Streamlit che crea la barra bianca */
+    /* Nasconde l'header trasparente di Streamlit */
     [data-testid="stHeader"] {
         background: transparent !important;
         visibility: hidden;
@@ -25,7 +25,7 @@ st.markdown("""
     
     /* Regolazione dello spazio superiore della pagina */
     .block-container {
-        padding-top: 2rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 2rem !important;
     }
     
@@ -163,9 +163,6 @@ else:
     st.progress(completati_p1 / 5)
 
     if completati_p1 == 5:
-        st.success("Primo Piano completato e in sicurezza.")
-    else:
-        st.info(f"Stato: {completati_p1}/5 controlli completati")
         st.success("Primo Piano completato e in sicurezza.")
     else:
         st.info(f"Stato: {completati_p1}/5 controlli completati")
