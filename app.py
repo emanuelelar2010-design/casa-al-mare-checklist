@@ -1,198 +1,84 @@
+import os
+from PIL import Image
 import streamlit as st
-import base64
 
-# --- FUNZIONE TRUCCO PER L'ICONA SU SMARTPHONE ---
-# Questa funzione inietta codice HTML nell'header della pagina che Streamlit di solito nasconde.
-# Dice al telefono: "Usa questa immagine specifica come icona della Home".
-def inject_pwa_meta():
-    try:
-        with open("icona.png", "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode()
-        
-        # Codice HTML speciale per dispositivi Apple e Android
-        pwa_meta_html = f'''
-            <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,{encoded_string}">
-            <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,{encoded_string}">
-            <link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,{encoded_string}">
-            <meta name="apple-mobile-web-app-title" content="Ibiza">
-            <meta name="apple-mobile-web-app-capable" content="yes">
-            <meta name="apple-mobile-web-app-status-bar-style" content="black">
-        '''
-        # Iniettiamo l'HTML in un punto invisibile della pagina
-        st.markdown(pwa_meta_html, unsafe_allow_html=True)
-    except FileNotFoundError:
-        # Se il file icona.png non esiste, non fare nulla (evita crash)
-        pass
-
-# --- INIZIO APP ---
-
-# Configurazione pagina (rimane, ma il trucco sopra è più potente)
+# Configurazione della pagina (stile Midnight Minimal, full-screen)
 st.set_page_config(
-    page_title="Checklist Ibiza", 
-    page_icon="icona.png", 
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    page_title="Ibiza Villa Checklist", page_icon="🏡", layout="centered"
 )
 
-# Eseguiamo il trucco dell'icona subito dopo la configurazione
-inject_pwa_meta()
-
-# Stile CSS: Sfondo nero assoluto, rimozione striscia bianca e pulsanti puliti
-st.markdown("""
+# CSS personalizzato per eliminare margini e dare un look immersivo scuro
+st.markdown(
+    """
     <style>
-    /* Rimozione completa di ogni margine e striscia bianca in alto */
-    .stApp, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], header {
-        background-color: #07090E !important;
-        color: #C9D1D9 !important;
+    .stApp {
+        background-color: #121212;
+        color: #ffffff;
     }
-    
-    /* Nasconde l'header trasparente di Streamlit */
-    [data-testid="stHeader"] {
-        background: transparent !important;
-        visibility: hidden;
-    }
-    
-    /* Regolazione dello spazio superiore della pagina */
+    /* Rimuove intestazioni e padding eccessivi per un'esperienza mobile nativa */
+    header {visibility: hidden;}
     .block-container {
-        padding-top: 1.5rem !important;
-        padding-bottom: 2rem !important;
-    }
-    
-    h1 { 
-        color: #F0F6FC !important; 
-        font-family: 'Courier New', monospace; 
-        font-weight: 700;
-        letter-spacing: -1px;
-    }
-    h2, h3 { 
-        color: #8B949E !important; 
-        font-family: 'Courier New', monospace; 
-        font-size: 1.1rem !important;
-    }
-
-    img {
-        border-radius: 10px;
-        border: 1px solid #30363D;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-        margin-bottom: 20px;
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+        max-width: 600px;
     }
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
-# Inizializzazione dello stato in memoria
-if 'pt_states' not in st.session_state:
-    st.session_state.pt_states = [False, False, False, False, False]
-if 'pp_states' not in st.session_state:
-    st.session_state.pp_states = [False, False, False, False, False]
-if 'piano_corrente' not in st.session_state:
-    st.session_state.piano_corrente = "Piano Terra"
+st.title("🏡 Piano Terra - Controllo Villa")
+st.write("Seleziona gli elementi da verificare/spegnere:")
 
-# Titolo
-st.title("CHECKLIST // IBIZA")
-st.caption("Protocollo di sicurezza e chiusura")
+# --- 1. DEFINIZIONE DEGLI ELEMENTI (4 layer totali) ---
+# L'ordine corrisponde esattamente ai layer: da 0 a 3
+checklist_items = [
+    {"label": "Contatore Acqua", "file": "pt_layer_0.png"},
+    {
+        "label": "Linea Luci 1 & 2 (Unificate)",
+        "file": "pt_layer_1.png",
+    },  # Accorpate
+    {"label": "Linea Luci 3", "file": "pt_layer_2.png"},
+    {"label": "Vano Scale", "file": "pt_layer_3.png"},
+]
 
-st.markdown("---")
+# --- 2. INTERFACCIA UTENTE (Checkbox dinamiche) ---
+selected_states = []
 
-# Selettore piano a pulsanti grandi e puliti (senza emoji)
-col_nav1, col_nav2 = st.columns(2)
-with col_nav1:
-    if st.button("PIANO TERRA", type="secondary" if st.session_state.piano_corrente != "Piano Terra" else "primary", use_container_width=True):
-        st.session_state.piano_corrente = "Piano Terra"
-        st.rerun()
-with col_nav2:
-    if st.button("PRIMO PIANO", type="secondary" if st.session_state.piano_corrente != "Primo Piano" else "primary", use_container_width=True):
-        st.session_state.piano_corrente = "Primo Piano"
-        st.rerun()
+for i, item in enumerate(checklist_items):
+    # Ogni checkbox restituisce True se spuntata
+    is_checked = st.checkbox(item["label"], key=f"pt_item_{i}")
+    selected_states.append(is_checked)
 
-st.markdown("")
+# --- 3. LOGICA DI COMPOSIZIONE PIL (Layer-Overlay) ---
+base_image_path = "piano_terra.png"
 
-# --- PIANO TERRA ---
-if st.session_state.piano_corrente == "Piano Terra":
-    st.subheader("PIANO TERRA")
-    
-    completati = sum(st.session_state.pt_states)
-    
-    # Gestione delle piantine: carichiamo sempre la standard per ora
-    try:
-        st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
-    except Exception:
-        st.warning("⚠️ Metti l'immagine 'piano_terra.png' nel repository.")
+try:
+    # Carica la piantina di base
+    base_img = Image.open(base_image_path).convert("RGBA")
 
-    st.markdown("### Verifica Elementi:")
-    
-    voci_pt = [
-        "🚰 Contatore Acqua",
-        "💡 Linea Luci 1",
-        "🔦 Linea Luci 2",
-        "🏮 Linea Luci 3",
-        "🪜 Vano Scale"
-    ]
+    # Partiamo dalla copia della base
+    combined_img = base_img.copy()
 
-    col1, col2 = st.columns(2)
-    for i, voce in enumerate(voci_pt):
-        current_col = col1 if i % 2 == 0 else col2
-        is_checked = st.session_state.pt_states[i]
-        
+    # Sovrapponi in tempo reale solo i layer corrispondenti alle checkbox spuntate
+    for i, is_checked in enumerate(selected_states):
         if is_checked:
-            label = f"🟢 {voce} [FATTO]"
-            btn_type = "primary"
-        else:
-            label = f"⚪ {voce}"
-            btn_type = "secondary"
-        
-        with current_col:
-            if st.button(label, key=f"pt_btn_{i}", type=btn_type, use_container_width=True):
-                st.session_state.pt_states[i] = not is_checked
-                st.rerun()
+            layer_file = checklist_items[i]["file"]
+            if os.path.exists(layer_file):
+                overlay_img = Image.open(layer_file).convert("RGBA")
+                # Incolla il layer trasparente sopra la base usando se stesso come maschera
+                combined_img.alpha_composite(overlay_img)
+            else:
+                st.warning(
+                    f"⚠️ Attenzione: Impossibile trovare il file {layer_file}"
+                )
 
-    st.progress(completati / 5)
+    # Mostra l'immagine finale risultante aggiornata in tempo reale
+    st.markdown("---")
+    st.subheader("📊 Stato Piantina in Tempo Reale")
+    st.image(combined_img, use_container_width=True)
 
-    if completati == 5:
-        st.success("Piano Terra completato e in sicurezza.")
-    else:
-        st.info(f"Stato: {completati}/5 controlli completati")
-
-# --- PRIMO PIANO ---
-else:
-    st.subheader("PRIMO PIANO")
-    
-    completati_p1 = sum(st.session_state.pp_states)
-    
-    try:
-        st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
-    except Exception:
-        st.warning("⚠️ Metti l'immagine 'primo_piano.png' nel repository.")
-
-    st.markdown("### Verifica Elementi:")
-    
-    voci_pp = [
-        "⚡ Contatore Elettrico",
-        "🔥 Valvola Gas",
-        "🔌 Prese TV / Frigo",
-        "⛺ Tende Esterne",
-        "🪟 Finestre"
-    ]
-
-    col1, col2 = st.columns(2)
-    for i, voce in enumerate(voci_pp):
-        current_col = col1 if i % 2 == 0 else col2
-        is_checked = st.session_state.pp_states[i]
-        
-        if is_checked:
-            label = f"🟢 {voce} [FATTO]"
-            btn_type = "primary"
-        else:
-            label = f"⚪ {voce}"
-            btn_type = "secondary"
-        
-        with current_col:
-            if st.button(label, key=f"pp_btn_{i}", type=btn_type, use_container_width=True):
-                st.session_state.pp_states[i] = not is_checked
-                st.rerun()
-
-    st.progress(completati_p1 / 5)
-
-    if completati_p1 == 5:
-        st.success("Primo Piano completato e in sicurezza.")
-    else:
-        st.info(f"Stato: {completati_p1}/5 controlli completati")
+except FileNotFoundError:
+    st.error(
+        f"❌ Errore critico: Assicurati che l'immagine di base '{base_image_path}' e i layer siano nella stessa cartella dello script."
+    )
