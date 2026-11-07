@@ -8,12 +8,25 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Stile CSS per i pulsanti e lo sfondo nero assoluto
+# Stile CSS: Sfondo nero assoluto, rimozione striscia bianca e pulsanti cambio piano grandi
 st.markdown("""
     <style>
-    .stApp, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+    /* Rimozione completa di ogni margine e striscia bianca in alto */
+    .stApp, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], header {
         background-color: #07090E !important;
         color: #C9D1D9 !important;
+    }
+    
+    /* Nasconde l'header trasparente di Streamlit che crea la barra bianca */
+    [data-testid="stHeader"] {
+        background: transparent !important;
+        visibility: hidden;
+    }
+    
+    /* Regolazione dello spazio superiore della pagina */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
     }
     
     h1 { 
@@ -51,14 +64,14 @@ st.caption("Protocollo di sicurezza e chiusura")
 
 st.markdown("---")
 
-# Selettore piano a pulsanti orizzontali
+# Selettore piano a pulsanti grandi e puliti (senza emoji)
 col_nav1, col_nav2 = st.columns(2)
 with col_nav1:
-    if st.button("📍 Piano Terra", type="secondary" if st.session_state.piano_corrente != "Piano Terra" else "primary", use_container_width=True):
+    if st.button("PIANO TERRA", type="secondary" if st.session_state.piano_corrente != "Piano Terra" else "primary", use_container_width=True):
         st.session_state.piano_corrente = "Piano Terra"
         st.rerun()
 with col_nav2:
-    if st.button("📍 Primo Piano", type="secondary" if st.session_state.piano_corrente != "Primo Piano" else "primary", use_container_width=True):
+    if st.button("PRIMO PIANO", type="secondary" if st.session_state.piano_corrente != "Primo Piano" else "primary", use_container_width=True):
         st.session_state.piano_corrente = "Primo Piano"
         st.rerun()
 
@@ -70,7 +83,6 @@ if st.session_state.piano_corrente == "Piano Terra":
     
     completati = sum(st.session_state.pt_states)
     
-    # Mostra la piantina in base allo stato
     if completati == 5:
         st.image("piano_terra.png", caption="Blueprint - Piano Terra [IN SICUREZZA]", use_container_width=True)
     else:
@@ -151,6 +163,9 @@ else:
     st.progress(completati_p1 / 5)
 
     if completati_p1 == 5:
+        st.success("Primo Piano completato e in sicurezza.")
+    else:
+        st.info(f"Stato: {completati_p1}/5 controlli completati")
         st.success("Primo Piano completato e in sicurezza.")
     else:
         st.info(f"Stato: {completati_p1}/5 controlli completati")
