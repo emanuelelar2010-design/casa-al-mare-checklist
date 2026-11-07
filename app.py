@@ -1,12 +1,41 @@
 import streamlit as st
+import base64
 
-# Configurazione pagina con l'icona personalizzata
+# --- FUNZIONE TRUCCO PER L'ICONA SU SMARTPHONE ---
+# Questa funzione inietta codice HTML nell'header della pagina che Streamlit di solito nasconde.
+# Dice al telefono: "Usa questa immagine specifica come icona della Home".
+def inject_pwa_meta():
+    try:
+        with open("icona.png", "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode()
+        
+        # Codice HTML speciale per dispositivi Apple e Android
+        pwa_meta_html = f'''
+            <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,{encoded_string}">
+            <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,{encoded_string}">
+            <link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,{encoded_string}">
+            <meta name="apple-mobile-web-app-title" content="Ibiza">
+            <meta name="apple-mobile-web-app-capable" content="yes">
+            <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        '''
+        # Iniettiamo l'HTML in un punto invisibile della pagina
+        st.markdown(pwa_meta_html, unsafe_allow_html=True)
+    except FileNotFoundError:
+        # Se il file icona.png non esiste, non fare nulla (evita crash)
+        pass
+
+# --- INIZIO APP ---
+
+# Configurazione pagina (rimane, ma il trucco sopra è più potente)
 st.set_page_config(
     page_title="Checklist Ibiza", 
     page_icon="icona.png", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
+# Eseguiamo il trucco dell'icona subito dopo la configurazione
+inject_pwa_meta()
 
 # Stile CSS: Sfondo nero assoluto, rimozione striscia bianca e pulsanti puliti
 st.markdown("""
@@ -83,10 +112,11 @@ if st.session_state.piano_corrente == "Piano Terra":
     
     completati = sum(st.session_state.pt_states)
     
-    if completati == 5:
-        st.image("piano_terra.png", caption="Blueprint - Piano Terra [IN SICUREZZA]", use_container_width=True)
-    else:
+    # Gestione delle piantine: carichiamo sempre la standard per ora
+    try:
         st.image("piano_terra.png", caption="Blueprint - Piano Terra", use_container_width=True)
+    except Exception:
+        st.warning("⚠️ Metti l'immagine 'piano_terra.png' nel repository.")
 
     st.markdown("### Verifica Elementi:")
     
@@ -128,10 +158,10 @@ else:
     
     completati_p1 = sum(st.session_state.pp_states)
     
-    if completati_p1 == 5:
-        st.image("primo_piano.png", caption="Blueprint - Primo Piano [IN SICUREZZA]", use_container_width=True)
-    else:
+    try:
         st.image("primo_piano.png", caption="Blueprint - Primo Piano", use_container_width=True)
+    except Exception:
+        st.warning("⚠️ Metti l'immagine 'primo_piano.png' nel repository.")
 
     st.markdown("### Verifica Elementi:")
     
@@ -166,4 +196,3 @@ else:
         st.success("Primo Piano completato e in sicurezza.")
     else:
         st.info(f"Stato: {completati_p1}/5 controlli completati")
-        
