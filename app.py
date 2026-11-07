@@ -15,7 +15,6 @@ st.markdown(
         background-color: #121212;
         color: #ffffff;
     }
-    /* Rimuove intestazioni e padding eccessivi per un'esperienza mobile nativa */
     header {visibility: hidden;}
     .block-container {
         padding-top: 1rem;
@@ -27,58 +26,68 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🏡 Piano Terra - Controllo Villa")
-st.write("Seleziona gli elementi da verificare/spegnere:")
+st.title("🏡 Gestione Villa - Ibiza")
 
-# --- 1. DEFINIZIONE DEGLI ELEMENTI (4 layer totali) ---
-# L'ordine corrisponde esattamente ai layer: da 0 a 3
-checklist_items = [
-    {"label": "Contatore Acqua", "file": "pt_layer_0.png"},
-    {
-        "label": "Linea Luci 1 & 2 (Unificate)",
-        "file": "pt_layer_1.png",
-    },  # Accorpate
-    {"label": "Linea Luci 3", "file": "pt_layer_2.png"},
-    {"label": "Vano Scale", "file": "pt_layer_3.png"},
-]
+# --- 1. SELETTORE DEL PIANO ---
+piano_selezionato = st.selectbox(
+    "Seleziona il Piano", ["Piano Terra", "Primo Piano (Prossimamente)"]
+)
 
-# --- 2. INTERFACCIA UTENTE (Checkbox dinamiche) ---
+st.markdown("---")
+
+# --- 2. CONFIGURAZIONE ELEMENTI E LAYER PER IL PIANO TERRA ---
+if piano_selezionato == "Piano Terra":
+    st.subheader("📍 Piano Terra - Check interruttori e utenze")
+
+    # I 4 layer creati per il piano terra (con Luci 1 & 2 unificate)
+    checklist_items = [
+        {"label": "Contatore Acqua", "file": "pt_layer_0.png"},
+        {"label": "Linea Luci 1 & 2", "file": "pt_layer_1.png"},
+        {"label": "Linea Luci 3", "file": "pt_layer_2.png"},
+        {"label": "Vano Scale", "file": "pt_layer_3.png"},
+    ]
+
+    base_image_path = "piano_terra.png"
+else:
+    # Spazio riservato per quando aggiungerai il primo piano
+    st.info(
+        "🚧 Il Primo Piano sarà configurato non appena preparerai le relative immagini!"
+    )
+    st.stop()
+
+# --- 3. INTERFACCIA UTENTE (Checkbox) ---
 selected_states = []
-
 for i, item in enumerate(checklist_items):
-    # Ogni checkbox restituisce True se spuntata
     is_checked = st.checkbox(item["label"], key=f"pt_item_{i}")
     selected_states.append(is_checked)
 
-# --- 3. LOGICA DI COMPOSIZIONE PIL (Layer-Overlay) ---
-base_image_path = "piano_terra.png"
-
+# --- 4. LOGICA DI COMPOSIZIONE PIL (Con la piantina SOPRA) ---
 try:
     # Carica la piantina di base
     base_img = Image.open(base_image_path).convert("RGBA")
 
-    # Partiamo dalla copia della base
-    combined_img = base_img.copy()
+    # Creiamo un'immagine trasparente delle stesse dimensioni della piantina
+    # dove andremo prima a incollare i cerchietti attivi
+    canvas = Image.new("RGBA", base_img.size, (0, 0, 0, 0))
 
-    # Sovrapponi in tempo reale solo i layer corrispondenti alle checkbox spuntate
+    # Incolla sul canvas trasparente solo i layer delle voci spuntate
     for i, is_checked in enumerate(selected_states):
         if is_checked:
             layer_file = checklist_items[i]["file"]
             if os.path.exists(layer_file):
                 overlay_img = Image.open(layer_file).convert("RGBA")
-                # Incolla il layer trasparente sopra la base usando se stesso come maschera
-                combined_img.alpha_composite(overlay_img)
-            else:
-                st.warning(
-                    f"⚠️ Attenzione: Impossibile trovare il file {layer_file}"
-                )
+                canvas.alpha_composite(overlay_img)
 
-    # Mostra l'immagine finale risultante aggiornata in tempo reale
+    # ORA UNIAMO LA PIANTINA SOPRA:
+    # Mettiamo la piantina di base (base_img) SOPRA al canvas dei cerchietti
+    final_img = Image.alpha_composite(canvas, base_img)
+
+    # Mostra l'immagine finale risultante
     st.markdown("---")
-    st.subheader("📊 Stato Piantina in Tempo Reale")
-    st.image(combined_img, use_container_width=True)
+    st.subheader("📊 Visualizzazione Piantina")
+    st.image(final_img, use_container_width=True)
 
 except FileNotFoundError:
     st.error(
-        f"❌ Errore critico: Assicurati che l'immagine di base '{base_image_path}' e i layer siano nella stessa cartella dello script."
+        f"❌ Errore: Assicurati che l'immagine di base '{base_image_path}' e i file dei layer siano nella cartella del progetto."
     )
